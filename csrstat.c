@@ -70,7 +70,9 @@ int main(int argc, const char * argv[])
 	uint32_t config = 0;
 	// Syscall
 	csr_get_active_config(&config);
-
+	//
+	// Note: Apple is no longer using 0x67 but 0x77 for csrutil disabled!!!
+	//
 	printf("System Integrity Protection status: %s ", (config == CSR_VALID_FLAGS) ? "\33[1mdisabled\33[0m": "enabled");
 
 	if (config)
