@@ -18,13 +18,13 @@
 typedef uint32_t csr_config_t;
 
 /* Rootless configuration flags */
-#define CSR_ALLOW_UNTRUSTED_KEXTS		(1 << 0)
-#define CSR_ALLOW_UNRESTRICTED_FS		(1 << 1)
-#define CSR_ALLOW_TASK_FOR_PID			(1 << 2)
-#define CSR_ALLOW_KERNEL_DEBUGGER		(1 << 3)
-#define CSR_ALLOW_APPLE_INTERNAL		(1 << 4)
-#define CSR_ALLOW_UNRESTRICTED_DTRACE	(1 << 5)
-#define CSR_ALLOW_UNRESTRICTED_NVRAM	(1 << 6)
+#define CSR_ALLOW_UNTRUSTED_KEXTS		(1 << 0)	// 1
+#define CSR_ALLOW_UNRESTRICTED_FS		(1 << 1)	// 2
+#define CSR_ALLOW_TASK_FOR_PID			(1 << 2)	// 4
+#define CSR_ALLOW_KERNEL_DEBUGGER		(1 << 3)	// 8
+#define CSR_ALLOW_APPLE_INTERNAL		(1 << 4)	// 16
+#define CSR_ALLOW_UNRESTRICTED_DTRACE	(1 << 5)	// 32
+#define CSR_ALLOW_UNRESTRICTED_NVRAM	(1 << 6)	// 64
 
 #define CSR_VALID_FLAGS (CSR_ALLOW_UNTRUSTED_KEXTS | \
 	CSR_ALLOW_UNRESTRICTED_FS | \
