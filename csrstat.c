@@ -4,7 +4,7 @@
  * Author.: Pike R. Alpha
  * Purpose: Command line tool for El Capitan to get the active SIP status.
  *
- * Compile with: cc csrstat.c /usr/lib/libSystem.B.dylib -o csrstat
+ * Compile with: cc csrstat.c -o csrstat
  * 
  * Updates:
  *			- Use csr_check so that csr_allow_all/internal are taken into account (Pike R. Alpha September 2015).
@@ -73,7 +73,7 @@ int main(int argc, const char * argv[])
 	//
 	// Note: Apple is no longer using 0x67 but 0x77 for csrutil disabled!!!
 	//
-	printf("System Integrity Protection status: %s ", (config == CSR_VALID_FLAGS) ? "\33[1mdisabled\33[0m": "enabled");
+	printf("System Integrity Protection status: %s (0x%08x)", (config == CSR_VALID_FLAGS) ? "\33[1mdisabled\33[0m": "enabled", config);
 
 	if (config)
 	{
