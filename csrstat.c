@@ -73,7 +73,7 @@ int main(int argc, const char * argv[])
 	//
 	// Note: Apple is no longer using 0x67 but 0x77 for csrutil disabled!!!
 	//
-	printf("System Integrity Protection status: %s (0x%08x)", (config == CSR_VALID_FLAGS) ? "\33[1mdisabled\33[0m": "enabled", config);
+	printf("System Integrity Protection status: %s (0x%08x) ", (config == CSR_VALID_FLAGS) ? "\33[1mdisabled\33[0m": "enabled", config);
 
 	if (config)
 	{
@@ -83,14 +83,15 @@ int main(int argc, const char * argv[])
 		}
 		else
 		{
-			printf("(Custom Configuration: 0x%08x).", config);
+			printf("(Custom Configuration).");
 		}
 	}
 	
 	printf("\n\nConfiguration:\n");
 
-	printf("\tApple Internal: %s\n", _csr_check(CSR_ALLOW_APPLE_INTERNAL, 1));
+	printf("\tApple Internal: %s\n", _csr_check(CSR_ALLOW_APPLE_INTERNAL, (config == 0) ? 0 : 1));
 	printf("\tKext Signing Restrictions: %s\n", _csr_check(CSR_ALLOW_UNTRUSTED_KEXTS, 0));
+	printf("\tTask for PID Restrictions: %s\n", _csr_check(CSR_ALLOW_TASK_FOR_PID, 0));
 	printf("\tFilesystem Protections: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_FS, 0));
 	printf("\tDebugging Restrictions: %s\n", _csr_check(CSR_ALLOW_KERNEL_DEBUGGER, 0));
 	printf("\tDTrace Restrictions: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_DTRACE, 0));
