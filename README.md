@@ -2,7 +2,7 @@ You can run the csrstat tool by entering:
 ```
 ./csrstat
 ```
-`Here's an example of the output (in the latest version):
+Here's an example of the output (in the latest version):
 ```
 System Integrity Protection status: enabled (0x00000080) (Custom Configuration).
 
