@@ -7,15 +7,18 @@
  * Compile with: cc csrstat.c -o csrstat
  * 
  * Updates:
- *			- Use csr_check so that csr_allow_all/internal are taken into account (Pike R. Alpha September 2015).
- *			- Added macOS Sierra 10.12 compatibilty (Pike R. Alpha July 2016).
- *			- Added macOS High Sierra 10.13 compatibilty (Pike R. Alpha June 2017).
+ *			- Use csr_check so that csr_allow_all/internal are taken into account (Pike R. Alpha, September 2015).
+ *			- Added macOS Sierra 10.12 compatibilty (Pike R. Alpha, July 2016).
+ *			- Added macOS High Sierra 10.13 compatibilty (Pike R. Alpha, June 2017).
+ *			- Header added (Pike R. Alpha, September 2017).
  */
 
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <strings.h>
 
 typedef uint32_t csr_config_t;
 
@@ -29,7 +32,7 @@ typedef uint32_t csr_config_t;
 #define CSR_ALLOW_UNRESTRICTED_NVRAM	(1 << 6)	// 64
 #define CSR_ALLOW_DEVICE_CONFIGURATION	(1 << 7)	// 128
 #define CSR_ALLOW_ANY_RECOVERY_OS		(1 << 8)	// 256
-#define CSR_ALLOW_APPLE_INTERNAL_HS		(1 << 9)	// 512 - rename me after High Sierra hss been released :-)
+#define CSR_ALLOW_USER_APPROVED_KEXTS	(1 << 9)	// 512
 
 #define CSR_VALID_FLAGS (CSR_ALLOW_UNTRUSTED_KEXTS | \
 	CSR_ALLOW_UNRESTRICTED_FS | \
@@ -40,7 +43,7 @@ typedef uint32_t csr_config_t;
 	CSR_ALLOW_UNRESTRICTED_NVRAM  | \
 	CSR_ALLOW_DEVICE_CONFIGURATION | \
 	CSR_ALLOW_ANY_RECOVERY_OS | \
-	CSR_ALLOW_APPLE_INTERNAL_HS)
+	CSR_ALLOW_USER_APPROVED_KEXTS)
 
 /* Syscalls */
 extern int csr_check(csr_config_t mask);
@@ -51,42 +54,50 @@ extern int csr_get_active_config(csr_config_t *config);
 char * _csr_check(aMask, aFlipflag)
 {
 	bool stat = 0;
-
-	// Syscall
-	if (csr_check(aMask) != 0)
-	{
-		stat = (aFlipflag) ? 0 : 1;
-	}
-	else
-	{
-		stat = (aFlipflag) ? 1 : 0;
-	}
+	bool bit = (csr_check(aMask) == aMask);
+	char * text = malloc(12);
 	
-	if (stat)
+	bzero(text, 12);
+	
+	if (aFlipflag)
 	{
-		if (aFlipflag)
+		if (bit)
 		{
-			return("\33[1menabled\33[0m");
+			sprintf(text, "%d (disabled)", bit);
 		}
 		else
 		{
-			return("enabled");
+			sprintf(text, "%d (enabled)", bit);
 		}
 	}
-
-	return("\33[1mdisabled\33[0m");
+	else
+	{
+		if (bit)
+		{
+			sprintf(text, "%d (enabled)", bit);
+		}
+		else
+		{
+			sprintf(text, "%d (disabled)", bit);
+		}
+	}
+	
+	return text;
 }
-
 
 //==============================================================================
 
 int main(int argc, const char * argv[])
 {
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
 	uint32_t config = 0;
 	// Syscall
 	csr_get_active_config(&config);
+	
+	printf("csrstat v1.5 Copyright (c) 2015-%d) by Pike R. Alpha\n", (tm.tm_year + 1900));
 	//
-	// Note: Apple is no longer using 0x67 but 0x77 for csrutil disabled!!!
+	// Note: boot.efi is no longer using 0x67 but 0x77 for csrutil disabled!!!
 	//
 	printf("System Integrity Protection status: %s (0x%08x) ", (config == CSR_VALID_FLAGS) ? "\33[1mdisabled\33[0m": "enabled", config);
 
@@ -104,16 +115,16 @@ int main(int argc, const char * argv[])
 	
 	printf("\n\nConfiguration:\n");
 
-	printf("\tApple Internal...........: %s\n", _csr_check(CSR_ALLOW_APPLE_INTERNAL, (config == 0) ? 0 : 1));
-	printf("\tKext Signing Restrictions: %s\n", _csr_check(CSR_ALLOW_UNTRUSTED_KEXTS, 0));
-	printf("\tTask for PID Restrictions: %s\n", _csr_check(CSR_ALLOW_TASK_FOR_PID, 0));
-	printf("\tFilesystem Protections...: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_FS, 0));
-	printf("\tDebugging Restrictions...: %s\n", _csr_check(CSR_ALLOW_KERNEL_DEBUGGER, 0));
-	printf("\tDTrace Restrictions......: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_DTRACE, 0));
-	printf("\tNVRAM Protections........: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_NVRAM, 0));
-	printf("\tDevice Configuration.....: %s\n", _csr_check(CSR_ALLOW_DEVICE_CONFIGURATION, 1));
-	printf("\tBaseSystem Verification..: %s\n", _csr_check(CSR_ALLOW_ANY_RECOVERY_OS, 0));
-	printf("\tApple Internal HS........: %s\n", _csr_check(CSR_ALLOW_APPLE_INTERNAL_HS, 0));
+	printf("\tApple Internal............: %s\n", _csr_check(CSR_ALLOW_APPLE_INTERNAL, 0));
+	printf("\tKext Signing Restrictions.: %s\n", _csr_check(CSR_ALLOW_UNTRUSTED_KEXTS, 1));
+	printf("\tTask for PID Restrictions.: %s\n", _csr_check(CSR_ALLOW_TASK_FOR_PID, 1));
+	printf("\tFilesystem Protections....: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_FS, 1));
+	printf("\tDebugging Restrictions....: %s\n", _csr_check(CSR_ALLOW_KERNEL_DEBUGGER, 1));
+	printf("\tDTrace Restrictions.......: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_DTRACE, 1));
+	printf("\tNVRAM Protections.........: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_NVRAM, 1));
+	printf("\tDevice Configuration......: %s\n", _csr_check(CSR_ALLOW_DEVICE_CONFIGURATION, 0));
+	printf("\tBaseSystem Verification...: %s\n", _csr_check(CSR_ALLOW_ANY_RECOVERY_OS, 1));
+	printf("\tUser Approved Kext Loading: %s\n", _csr_check(CSR_ALLOW_USER_APPROVED_KEXTS, 1));
 	
 	if (config && (config != CSR_ALLOW_APPLE_INTERNAL))
 	{
