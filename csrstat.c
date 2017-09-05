@@ -11,6 +11,7 @@
  *			- Added macOS Sierra 10.12 compatibilty (Pike R. Alpha, July 2016).
  *			- Added macOS High Sierra 10.13 compatibilty (Pike R. Alpha, June 2017).
  *			- Header added (Pike R. Alpha, September 2017).
+ *			- Fixed two errors.
  */
 
 #include <time.h>
@@ -21,6 +22,8 @@
 #include <strings.h>
 
 typedef uint32_t csr_config_t;
+
+double gVersion = 1.6;
 
 /* Rootless configuration flags */
 #define CSR_ALLOW_UNTRUSTED_KEXTS		(1 << 0)	// 1
@@ -54,7 +57,7 @@ extern int csr_get_active_config(csr_config_t *config);
 char * _csr_check(aMask, aFlipflag)
 {
 	bool stat = 0;
-	bool bit = (csr_check(aMask) == aMask);
+	bool bit = csr_check(aMask) ? true : false;
 	char * text = malloc(12);
 	
 	bzero(text, 12);
@@ -95,7 +98,7 @@ int main(int argc, const char * argv[])
 	// Syscall
 	csr_get_active_config(&config);
 	
-	printf("csrstat v1.5 Copyright (c) 2015-%d by Pike R. Alpha\n", (tm.tm_year + 1900));
+	printf("csrstat v%.1f Copyright (c) 2015-%d by Pike R. Alpha\n", gVersion, (tm.tm_year + 1900));
 	//
 	// Note: boot.efi is no longer using 0x67 but 0x77 for csrutil disabled!!!
 	//
@@ -122,7 +125,7 @@ int main(int argc, const char * argv[])
 	printf("\tDebugging Restrictions....: %s\n", _csr_check(CSR_ALLOW_KERNEL_DEBUGGER, 1));
 	printf("\tDTrace Restrictions.......: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_DTRACE, 1));
 	printf("\tNVRAM Protections.........: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_NVRAM, 1));
-	printf("\tDevice Configuration......: %s\n", _csr_check(CSR_ALLOW_DEVICE_CONFIGURATION, 0));
+	printf("\tDevice Configuration......: %s\n", _csr_check(CSR_ALLOW_DEVICE_CONFIGURATION, 1));
 	printf("\tBaseSystem Verification...: %s\n", _csr_check(CSR_ALLOW_ANY_RECOVERY_OS, 1));
 	printf("\tUser Approved Kext Loading: %s\n", _csr_check(CSR_ALLOW_USER_APPROVED_KEXTS, 1));
 	
