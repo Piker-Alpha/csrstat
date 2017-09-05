@@ -95,7 +95,7 @@ int main(int argc, const char * argv[])
 	// Syscall
 	csr_get_active_config(&config);
 	
-	printf("csrstat v1.5 Copyright (c) 2015-%d) by Pike R. Alpha\n", (tm.tm_year + 1900));
+	printf("csrstat v1.5 Copyright (c) 2015-%d by Pike R. Alpha\n", (tm.tm_year + 1900));
 	//
 	// Note: boot.efi is no longer using 0x67 but 0x77 for csrutil disabled!!!
 	//
