@@ -7,11 +7,12 @@
  * Compile with: cc csrstat.c -o csrstat
  * 
  * Updates:
- *			- Use csr_check so that csr_allow_all/internal are taken into account (Pike R. Alpha, September 2015).
- *			- Added macOS Sierra 10.12 compatibilty (Pike R. Alpha, July 2016).
- *			- Added macOS High Sierra 10.13 compatibilty (Pike R. Alpha, June 2017).
- *			- Header added (Pike R. Alpha, September 2017).
- *			- Fixed two errors.
+ *			- use csr_check so that csr_allow_all/internal are taken into account (Pike R. Alpha, September 2015).
+ *			- added macOS Sierra 10.12 compatibilty (Pike R. Alpha, July 2016).
+ *			- added macOS High Sierra 10.13 compatibilty (Pike R. Alpha, June 2017).
+ *			- header added (Pike R. Alpha, September 2017).
+ *			- fixed two errors.
+ *			- no longer using _csr_check from the kernel, because it checks for specific settings.
  */
 
 #include <time.h>
@@ -23,7 +24,9 @@
 
 typedef uint32_t csr_config_t;
 
-double gVersion = 1.6;
+char *text = NULL;
+double gVersion = 1.7;
+csr_config_t config = 0;
 
 /* Rootless configuration flags */
 #define CSR_ALLOW_UNTRUSTED_KEXTS		(1 << 0)	// 1
@@ -49,18 +52,14 @@ double gVersion = 1.6;
 	CSR_ALLOW_USER_APPROVED_KEXTS)
 
 /* Syscalls */
-extern int csr_check(csr_config_t mask);
 extern int csr_get_active_config(csr_config_t *config);
 
 //==============================================================================
 
-char * _csr_check(aMask, aFlipflag)
+char * _csr_check(int aMask, bool aFlipflag)
 {
-	bool stat = 0;
-	bool bit = csr_check(aMask) ? true : false;
-	char * text = malloc(12);
-	
-	bzero(text, 12);
+	bool stat = false;
+	bool bit = (config & aMask);
 	
 	if (aFlipflag)
 	{
@@ -94,7 +93,8 @@ int main(int argc, const char * argv[])
 {
 	time_t t = time(NULL);
 	struct tm tm = *localtime(&t);
-	uint32_t config = 0;
+	text = malloc(12);
+	bzero(text, 12);
 	// Syscall
 	csr_get_active_config(&config);
 	
@@ -133,6 +133,9 @@ int main(int argc, const char * argv[])
 	{
 		printf("\nThis is an unsupported configuration, likely to break in the future and leave your machine in an unknown state.\n");
 	}
-
+	if (text)
+	{
+		free(text);
+	}
 	exit(-1);
 }
