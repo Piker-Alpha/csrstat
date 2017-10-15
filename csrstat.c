@@ -13,6 +13,9 @@
  *			- header added (Pike R. Alpha, September 2017).
  *			- fixed two errors.
  *			- no longer using _csr_check from the kernel, because it checks for specific settings.
+ *			- renamed CSR_ALLOW_USER_APPROVED_KEXTS to CSR_ALLOW_UNAPPROVED_KEXTS.
+ *			- flip output of 'Device Configuration'.
+ *			- changed the text of the CSR_ALLOW_UNAPPROVED_KEXTS setting.
  */
 
 #include <time.h>
@@ -25,7 +28,7 @@
 typedef uint32_t csr_config_t;
 
 char *text = NULL;
-double gVersion = 1.7;
+double gVersion = 1.8;
 csr_config_t config = 0;
 
 /* Rootless configuration flags */
@@ -38,7 +41,7 @@ csr_config_t config = 0;
 #define CSR_ALLOW_UNRESTRICTED_NVRAM	(1 << 6)	// 64
 #define CSR_ALLOW_DEVICE_CONFIGURATION	(1 << 7)	// 128
 #define CSR_ALLOW_ANY_RECOVERY_OS		(1 << 8)	// 256
-#define CSR_ALLOW_USER_APPROVED_KEXTS	(1 << 9)	// 512
+#define CSR_ALLOW_UNAPPROVED_KEXTS		(1 << 9)	// 512
 
 #define CSR_VALID_FLAGS (CSR_ALLOW_UNTRUSTED_KEXTS | \
 	CSR_ALLOW_UNRESTRICTED_FS | \
@@ -49,7 +52,7 @@ csr_config_t config = 0;
 	CSR_ALLOW_UNRESTRICTED_NVRAM  | \
 	CSR_ALLOW_DEVICE_CONFIGURATION | \
 	CSR_ALLOW_ANY_RECOVERY_OS | \
-	CSR_ALLOW_USER_APPROVED_KEXTS)
+	CSR_ALLOW_UNAPPROVED_KEXTS)
 
 /* Syscalls */
 extern int csr_get_active_config(csr_config_t *config);
@@ -118,16 +121,16 @@ int main(int argc, const char * argv[])
 	
 	printf("\n\nConfiguration:\n");
 
-	printf("\tApple Internal............: %s\n", _csr_check(CSR_ALLOW_APPLE_INTERNAL, 0));
-	printf("\tKext Signing Restrictions.: %s\n", _csr_check(CSR_ALLOW_UNTRUSTED_KEXTS, 1));
-	printf("\tTask for PID Restrictions.: %s\n", _csr_check(CSR_ALLOW_TASK_FOR_PID, 1));
-	printf("\tFilesystem Protections....: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_FS, 1));
-	printf("\tDebugging Restrictions....: %s\n", _csr_check(CSR_ALLOW_KERNEL_DEBUGGER, 1));
-	printf("\tDTrace Restrictions.......: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_DTRACE, 1));
-	printf("\tNVRAM Protections.........: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_NVRAM, 1));
-	printf("\tDevice Configuration......: %s\n", _csr_check(CSR_ALLOW_DEVICE_CONFIGURATION, 1));
-	printf("\tBaseSystem Verification...: %s\n", _csr_check(CSR_ALLOW_ANY_RECOVERY_OS, 1));
-	printf("\tUser Approved Kext Loading: %s\n", _csr_check(CSR_ALLOW_USER_APPROVED_KEXTS, 1));
+	printf("\tApple Internal...........: %s\n", _csr_check(CSR_ALLOW_APPLE_INTERNAL, 0));
+	printf("\tKext Signing Restrictions: %s\n", _csr_check(CSR_ALLOW_UNTRUSTED_KEXTS, 1));
+	printf("\tTask for PID Restrictions: %s\n", _csr_check(CSR_ALLOW_TASK_FOR_PID, 1));
+	printf("\tFilesystem Protections...: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_FS, 1));
+	printf("\tDebugging Restrictions...: %s\n", _csr_check(CSR_ALLOW_KERNEL_DEBUGGER, 1));
+	printf("\tDTrace Restrictions......: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_DTRACE, 1));
+	printf("\tNVRAM Protections........: %s\n", _csr_check(CSR_ALLOW_UNRESTRICTED_NVRAM, 1));
+	printf("\tDevice Configuration.....: %s\n", _csr_check(CSR_ALLOW_DEVICE_CONFIGURATION, 0));
+	printf("\tBaseSystem Verification..: %s\n", _csr_check(CSR_ALLOW_ANY_RECOVERY_OS, 1));
+	printf("\tAllow Unapproved Kexts...: %s\n", _csr_check(CSR_ALLOW_UNAPPROVED_KEXTS, 1));
 	
 	if (config && (config != CSR_ALLOW_APPLE_INTERNAL))
 	{
